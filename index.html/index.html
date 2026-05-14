@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tahmis Coffee & Roastery | Akıllı Reçete Sistemi</title>
+    <style>
+        :root {
+            --bg-color: #F9F6F0;
+            --primary: #000000;
+            --secondary: #fae4ce;
+            --white: #FFFFFF;
+            --text: #2C2C2C;
+            --border: #E0E0E0;
+            --box-bg: #FFFFFF;
+            --box-soft-bg: #f5f5f5;
+            --bg-watermark-image: url('https://tahmiscicoffee.com/images/logo_green.png');
+            --bg-watermark-opacity: 0.5;
+            --admin-bg: #2f2119;
+            --admin-panel: #3b2a22;
+            --admin-border: #c7a77a;
+            --admin-cream: #f7ecd8;
+            --admin-beige: #e6cfad;
+            --danger: #d32f2f;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text); 
+            padding-bottom: 50px; 
+            font-size: 16px;
+            position: relative;
+        }
+
+        /* Arka Plan Tema Filigranı[cite: 3] */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 70%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 160%;
+            height: 160%;
+            background-image: var(--bg-watermark-image);
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            opacity: var(--bg-watermark-opacity);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        header {
+            background-color: var(--primary); color: var(--secondary);
+            padding: 1rem 1.5rem; border-bottom: 5px solid var(--secondary);
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 15px;
+        }
+
+        /* Sol Üst Daire Logo[cite: 3] */
+        .logo-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-logo-circle {
+            width: 60px;
+            height: 60px;
+           
+            background-color: white;
+            background-image: url('https://tahmiscicoffee.com/images/logo_green.png');
+            background-size: 80%;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: 0,5px solid var(--secondary);
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+
+        /* Site Adı Güncellemesi[cite: 3] */
+        header .logo h1 { font-size: 1.4rem; letter-spacing: 1px; margin-bottom: 0.2rem; }
+        header .logo p { color: #EFEFEF; font-size: 0.9rem; font-style: italic; }
+
+        .search-container {
+            position: relative;
+            flex-grow: 1;
+            max-width: 500px;
+            margin: 0 20px;
+        }
+        #productSearch {
+            width: 100%;
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: 2px solid var(--secondary);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.3s;
+        }
+        #productSearch::placeholder { color: #ccc; }
+        #productSearch:focus { background: rgba(255,255,255,0.2); box-shadow: 0 0 10px rgba(212, 163, 115, 0.5); }
+
+        .search-suggestions {
+            position: absolute;
+            top: 110%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 2000;
+            max-height: 250px;
+            overflow-y: auto;
+            display: none;
+        }
+        .suggestion-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            color: var(--primary);
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+        }
+        .suggestion-item:hover { background: var(--secondary); color: var(--primary); }
+        .suggestion-category { font-size: 0.8rem; opacity: 0.7; font-style: italic; }
+
+        .admin-btn {
+            background-color: var(--secondary); color: var(--primary);
+            border: none; padding: 8px 16px; border-radius: 5px;
+            font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 0.9rem;
+        }
+        .admin-btn:hover { background-color: #e2b78c; }
+        .logout-btn { background-color: #d32f2f; color: white; display: none; }
+
+        .nav-container {
+            position: sticky; top: 0; background: var(--primary); padding: 12px;
+            z-index: 1000; display: flex; gap: 10px; overflow-x: auto; white-space: nowrap;
+        }
+        .nav-container::-webkit-scrollbar { display: none; }
+        
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.1); color: var(--white);
+            border: 1px solid rgba(255, 255, 255, 0.2); padding: 10px 18px;
+            border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 0.95rem;
+        }
+        .tab-btn.active { background: var(--secondary); color: var(--primary); }
+
+        .container { max-width: 1000px; margin: 25px auto; padding: 0 15px; }
+
+        details.item-group {
+            background: var(--box-bg); margin-bottom: 15px; border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;
+            border-left: 6px solid var(--secondary);
+        }
+        
+        details.item-group > summary {
+            padding: 15px; font-weight: bold; font-size: 1.15rem; color: var(--primary);
+            cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center;
+        }
+        details.item-group > summary::after { content: '▼'; font-size: 0.9rem; color: var(--secondary); margin-left: 10px; }
+        details.item-group[open] > summary::after { content: '▲'; }
+        
+        .sizes-container { padding: 0 15px 15px 15px; }
+
+        details.size-group {
+            background: var(--box-bg); margin-top: 10px; border: 1px solid var(--border); border-radius: 6px;
+        }
+        details.size-group > summary {
+            padding: 10px; cursor: pointer; font-weight: bold; font-size: 1.05rem;
+            color: #444; background: var(--box-soft-bg); border-radius: 6px;
+        }
+        
+        .recipe-content { padding: 15px; font-size: 1.05rem; line-height: 1.5; color: #333; }
+
+        #admin-panel {
+            display: none;
+            background: linear-gradient(180deg, var(--admin-panel), var(--admin-bg));
+            color: var(--admin-cream);
+            padding: 25px;
+            border-radius: 10px;
+            border: 2px solid var(--admin-border);
+            margin-top: 20px;
+            box-shadow: 0 12px 30px rgba(47,33,25,0.2);
+        }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--admin-border); padding-bottom: 10px; color: var(--admin-cream);}
+        .edit-textarea { width: 100%; min-height: 80px; padding: 12px; border: 1px solid #ccc; border-radius: 5px; margin-top: 10px; font-family: inherit; font-size: 1rem;}
+        
+        .save-btn { background: #2e7d32; color: white; border: none; padding: 15px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1.1rem; margin-top: 20px;}
+        .save-btn:hover { background: #1b5e20; }
+        .download-btn { background: #1565c0; color: white; border: none; padding: 15px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1.1rem; margin-top: 15px;}
+
+        .add-product-box, .admin-theme-box { background: var(--admin-cream); color: var(--admin-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--admin-border); margin-bottom: 30px; }
+        .admin-theme-box h3, .add-product-box h3 { color: var(--admin-bg); margin-bottom: 15px; }
+        .theme-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 18px; }
+        .theme-grid .form-group { margin-bottom: 0; }
+        .range-row { display: flex; align-items: center; gap: 12px; }
+        .range-row input { flex: 1; }
+        .theme-save-btn { background: #6b4a32; color: #fff8ec; border: none; padding: 12px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem; width: 100%; margin-top: 16px; }
+        .theme-save-btn:hover { background: #533725; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; color: #333; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; font-size: 0.95rem; border: 1px solid #ccc; border-radius: 5px; }
+        .add-btn { background: #1565c0; color: white; border: none; padding: 10px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem; width: 100%; }
+
+        .delete-btn {
+            background-color: var(--danger);
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: auto;
+            transition: 0.2s;
+        }
+        .delete-btn:hover { background-color: #b71c1c; }
+        .cat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 25px;
+            color: var(--admin-cream);
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 5px;
+        }
+
+        #admin-panel details.item-group {
+            background: var(--admin-cream);
+            color: var(--admin-bg);
+            border-left-color: var(--admin-border);
+        }
+        #admin-panel details.item-group > summary { color: var(--admin-bg); }
+        #admin-panel details.size-group { background: #fff9ee; }
+        #admin-panel details.size-group > summary { background: #ead8bc; color: var(--admin-bg); }
+        #admin-panel .recipe-content { color: var(--admin-bg); }
+
+        .site-lock {
+            position: fixed;
+            inset: 0;
+            z-index: 5000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: radial-gradient(circle at top, #6f523a, #2f2119 65%);
+            color: #fff8ec;
+        }
+        .site-lock.hidden { display: none; }
+        .site-lock-card {
+            width: min(420px, 100%);
+            background: #f7ecd8;
+            color: #2f2119;
+            border: 2px solid #c7a77a;
+            border-radius: 8px;
+            padding: 28px;
+            box-shadow: 0 20px 45px rgba(0,0,0,0.35);
+            text-align: center;
+        }
+        .site-lock-card h2 { margin-bottom: 8px; color: #3b2a22; }
+        .site-lock-card p { margin-bottom: 18px; color: #6b4a32; }
+        .site-lock-card input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #c7a77a;
+            border-radius: 5px;
+            font-size: 1rem;
+            margin-bottom: 12px;
+            background: #fffaf0;
+            color: #2f2119;
+        }
+        .site-lock-card button {
+            width: 100%;
+            border: none;
+            border-radius: 5px;
+            padding: 12px;
+            background: #3b2a22;
+            color: #fff8ec;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .site-lock-card button:hover { background: #6b4a32; }
+        .site-lock-error { min-height: 20px; margin-top: 12px; margin-bottom: 0; color: #a3261f; font-weight: bold; }
+        body.locked { overflow: hidden; }
+        body.locked header,
+        body.locked .nav-container,
+        body.locked .container {
+            filter: blur(2px);
+            pointer-events: none;
+            user-select: none;
+        }
+
+        @media (max-width: 700px) {
+            .theme-grid { grid-template-columns: 1fr; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="siteGate" class="site-lock">
+        <form class="site-lock-card" onsubmit="unlockSite(event)">
+            <h2>TAHMIS RECETE</h2>
+            <p>Siteye erisim icin sifre giriniz.</p>
+            <input type="password" id="siteGatePassword" placeholder="Sifre" autocomplete="current-password">
+            <button type="submit">Giris Yap</button>
+            <p id="siteGateError" class="site-lock-error"></p>
+        </form>
+    </div>
+
+    <header>
+        <div class="logo-wrapper">
+            <div class="header-logo-circle"></div> <!-- Daire Logo[cite: 3] -->
+            <div class="logo">
+                <h1>☕ TAHMIS COFFEE & ROASTERY</h1> <!-- Güncellenen İsim[cite: 3] -->
+                <p>Akıllı Reçete & Yönetici Sistemi</p>
+            </div>
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="productSearch" placeholder="Ürün veya reçete ara..." oninput="handleSearch(this.value)">
+            <div id="searchSuggestions" class="search-suggestions"></div>
+        </div>
+
+        <div>
+            <button class="admin-btn logout-btn" id="logoutBtn" onclick="logoutAdmin()">Çıkış Yap</button>
+            <button class="admin-btn" id="loginBtn" onclick="loginAdmin()">Yönetici Girişi</button>
+        </div>
+    </header>
+
+    <div class="nav-container" id="userTabs"></div>
+
+    <div class="container">
+        <div id="recipe-list"></div>
+
+        <div id="admin-panel">
+            <div class="admin-header">
+                <h2>🛠️ İçerik Özelleştirme Paneli</h2>
+            </div>
+            
+            <div class="admin-theme-box">
+                <h3>Gorunum Ayarlari</h3>
+                <div class="theme-grid">
+                    <div class="form-group">
+                        <label>Arka Plan Rengi:</label>
+                        <input type="color" id="themeBgColor" oninput="previewThemeSettings()">
+                    </div>
+                    <div class="form-group">
+                        <label>Kutucuk Rengi:</label>
+                        <input type="color" id="themeBoxColor" oninput="previewThemeSettings()">
+                    </div>
+                    <div class="form-group">
+                        <label>Arka Plan Gorsel URL:</label>
+                        <input type="url" id="themeBgImage" placeholder="https://..." oninput="previewThemeSettings()">
+                    </div>
+                    <div class="form-group">
+                        <label>Gorsel Saydamligi: <span id="themeOpacityValue">50%</span></label>
+                        <div class="range-row">
+                            <input type="range" id="themeBgOpacity" min="0" max="100" value="50" oninput="previewThemeSettings()">
+                        </div>
+                    </div>
+                </div>
+                <button class="theme-save-btn" onclick="saveThemeSettings()">Gorunumu Kaydet</button>
+            </div>
+
+            <div class="add-product-box">
+                <h3>➕ Yeni Ürün Ekle</h3>
+                <div class="form-group">
+                    <label>Kategori Seçin:</label>
+                    <select id="newCat" onchange="checkNewCategory(this)"></select>
+                </div>
+                <div class="form-group">
+                    <label>Ürün Adı:</label>
+                    <input type="text" id="newProdName" placeholder="Örn: White Chocolate Mocha">
+                </div>
+                <div class="form-group">
+                    <label>Boyut/Ölçü:</label>
+                    <input type="text" id="newSize" placeholder="Örn: 14 oz veya Standart">
+                </div>
+                <div class="form-group">
+                    <label>Reçete/Hazırlanışı:</label>
+                    <textarea id="newRecipe" placeholder="Reçete detaylarını buraya yazın..."></textarea>
+                </div>
+                <button class="add-btn" onclick="addNewProduct()">Ürünü Ekle</button>
+            </div>
+
+            <p style="margin-bottom: 15px; color: #555; font-size: 1rem; font-weight: bold;">Mevcut Ürünleri Düzenle/Sil:</p>
+            <div id="admin-editor-list"></div>
+            <br>
+            <button class="save-btn" onclick="saveAdminChanges()">💾 DEĞİŞİKLİKLERİ KAYDET</button>
+            <button class="download-btn" onclick="downloadUpdatedFile()">⬇️ DOSYAYI İNDİR</button>
+        </div>
+    </div>
+
+<script id="database-script">
+window.defaultMenuData = {
+    "Demlemeler": {
+        "V60 / Chemex": { "Standart": "18 g kahve – 295 ml su – 93°C – 3 dk" },
+        "Japanese Cold Brew": { "Standart": "18 g kahve – 150 ml su – 120 g buz" }
+    },
+    "Espresso": {
+        "Espresso Macchiato": { "Single": "Single shot espresso + süt köpüğü", "Double": "Double shot espresso + süt köpüğü" },
+        "Espresso Panna": { "Single": "Single shot espresso + krem şanti", "Double": "Double shot espresso + krem şanti" },
+        "Cortado": { "8 oz": "Double shot espresso" },
+        "Flat White": { "14 oz": "Double shot espresso + single shot", "16-20 oz": "Double shot espresso + double shot" },
+        "Americano": { "14 oz": "Double shot espresso", "16-20 oz": "Double shot espresso + single shot" },
+        "Latte": { "14 oz": "Single shot espresso", "16-20 oz": "Double shot espresso" },
+        "Cappuccino": { "14 oz": "Single shot espresso + bol süt köpüğü", "16-20 oz": "Double shot espresso + bol süt köpüğü" },
+        "Shaken Espresso": { "14 oz": "Double shot buzla beraber sert 30 saniye shake bardağa dök kalanı sütle tamamla", "16-20 oz": "Double shot + single shot buzla beraber sert 30 saniye shake bardağa dök kalanı sütle tamamla" },
+        "Affagato": { "Standart": "4 top dondurma double shot espresso standart sadece fincanda" }
+    },
+    "Matcha": {
+        "Matcha (Köpürtme Ölçüleri)": { "14 oz": "3 g matcha + 30 ml sıcak su köpürt sağdan-sola", "16 oz": "4 g matcha + 40 ml sıcak su köpürt sağdan-sola", "20 oz": "5 g matcha + 50 ml sıcak su köpürt sağdan-sola" },
+        "Standart Matcha Latte": { "14 oz": "BUZ SÜT EN SON MATCHA SERVİS", "16-20 oz": "BUZ SÜT EN SON MATCHA SERVİS" },
+        "Çilekli Matcha Latte": { "14 oz": "BARDAĞIN DİBİNE 2,5 PUMP ÇİLEK ŞURUBU ÜSTÜNE SÜT EN SON BUZ SONRA MATCHA DÖKÜYORUZ", "16-20 oz": "BARDAĞIN DİBİNE 4 PUMP ÇİLEK ŞURUBU ÜSTÜNE SÜT EN SON BUZ SONRA MATCHA DÖKÜYORUZ" },
+        "Vanilya Matcha Latte": { "14 oz": "BARDAĞIN DİBİNE 2,5 PUMP VANİLYA ŞURUBU ÜSTÜNE SÜT EN SON BUZ SONRA MATCHA DÖKÜYORUZ", "16-20 oz": "BARDAĞIN DİBİNE 4 PUMP VANİLYA ŞURUBU ÜSTÜNE SÜT EN SON BUZ SONRA MATCHA DÖKÜYORUZ" },
+        "Frambuazlı Matcha Latte": { "14 oz": "BARDAĞIN DİBİNE 2,5 PUMP FRAMBUAZ ŞURUBU ÜSTÜNE SÜT EN SON BUZ SONRA MATCHA DÖKÜYORUZ", "16-20 oz": "BARDAĞIN DİBİNE 4 PUMP FRAMBUAZ ŞURUBU ÜSTÜNE SÜT EN SON BUZ SONRA MATCHA DÖKÜYORUZ" },
+        "Mangolu Matcha Latte": { "14 oz": "BARDAĞIN DİBİNE 2,5 PUMP MANGO ŞURUBU ÜSTÜNE SÜT EN SON BUZ SONRA MATCHA DÖKÜYORUZ", "16-20 oz": "BARDAĞIN DİBİNE 4 PUMP MANGO ŞURUBU ÜSTÜNE SÜT EN SON BUZ SONRA MATCHA DÖKÜYORUZ" },
+        "Narlı Matcha Latte": { "14 oz": "BARDAĞIN DİBİNE 2,5 PUMP NAR ŞURUBU ÜSTÜNE SÜT EN SON BUZ SONRA MATCHA DÖKÜYORUZ", "16-20 oz": "BARDAĞIN DİBİNE 4 PUMP NAR ŞURUBU ÜSTÜNE SÜT EN SON BUZ SONRA MATCHA DÖKÜYORUZ" },
+        "Pink Frozen Matcha Latte": { "14 oz": "Vanilya tozu 1 kaşık + süt frozen kıvamında blend hazırladığımız matchayı döküyoruz üstüne krema", "16-20 oz": "Vanilya tozu 1 kaşık + süt frozen kıvamında blend hazırladığımız matchayı döküyoruz üstüne krema" },
+        "Roasted Matcha Latte": { "14 oz": "2,5 pump kavrulmuş badem şurubu + süt shake hazırladığımız matchayı döküyoruz üstüne krema", "16-20 oz": "2,5 pump kavrulmuş badem şurubu + süt shake hazırladığımız matchayı döküyoruz üstüne krema" },
+        "Blue Coco Matcha Latte": { "14 oz": "2,5 pump coco şurup bardak içinde 10 saniye karıştır ve hazırladığımız matchayı üstüne dök", "16-20 oz": "4 pump coco şurup bardak içinde 10 saniye karıştır ve hazırladığımız matchayı üstüne dök" },
+        "Blue Dream Matcha Latte": { "14 oz": "1 kaşık vanilya + süt milkshake kıvamında blend hazırladığımız matchayı döküyoruz üstüne krema", "16-20 oz": "1,5 kaşık vanilya + süt milkshake kıvamında blend hazırladığımız matchayı döküyoruz üstüne krema" },
+        "Black and White Matcha Latte": { "14 oz": "10ml çikolata sos 10ml beyaz çikolata sos shake hazırladığımız matchayı döküyoruz üstüne krema", "16-20 oz": "15ml çikolata sos 15ml beyaz çikolata sos shake hazırladığımız matchayı döküyoruz üstüne krema" },
+        "Roastery Antep Latte": { "14 oz": "2 pump kavrulmuş badem 15-20 ml antep sos hazırladığımız matchayı döküyoruz üstüne krema", "16-20 oz": "4 pump kavrulmuş badem 15-20 ml antep sos hazırladığımız matchayı döküyoruz üstüne krema" },
+        "Antep Matcha Latte": { "14 oz": "Antep sos 20-30gr süt shake hazırladığımız matchayı üstüne ve krema", "16-20 oz": "Antep sos 40gr süt shake hazırladığımız matchayı üstüne ve krema" }
+    },
+    "Aromali": {
+        "Caramel Latte": { "14 oz": "Single shot + 2,5 pump caramel", "16-20 oz": "Double shot + 4 pump caramel şurup" },
+        "Toffeenut Latte": { "14 oz": "Single shot + 2,5 pump toffeenut", "16-20 oz": "Double shot + 4 pump toffeenut" },
+        "Vanilla Latte": { "14 oz": "Single shot + 2,5 pump vanilya", "16-20 oz": "Double shot + 4 pump vanilya" },
+        "Cookie Latte": { "14 oz": "Single shot + 2 pump shortbread", "16-20 oz": "Double shot + 4 pump shortbread" },
+        "Lotus Latte": { "14 oz": "Single shot + 30 g lotus", "16-20 oz": "Double shot + 40 g lotus" },
+        "Badem Latte": { "14 oz": "Single shot + 2,5 pump badem", "16-20 oz": "Double shot + 4 pump badem" },
+        "Fındık Latte": { "14 oz": "Single shot + 2,5 pump fındık", "16-20 oz": "Single shot + 4 pump fındık" },
+        "Irish Latte": { "14 oz": "Single shot + 2,5 pump irish", "16-20 oz": "Double shot + 4 pump irish" },
+        "Coconut Latte": { "14 oz": "Single shot + 2,5 pump coconut", "16-20 oz": "Double shot + 4 pump coconut" },
+        "Pumpkin Spice Latte": { "14 oz": "Single shot + 2,5 pump pumpkin", "16-20 oz": "Double shot + 4 pump pumpkin (isteğe bağlı tarçın)" },
+        "Caramel Macchiato": { "14 oz": "Single shot + 1,5 caramel + 1,5 vanilya", "16-20 oz": "Double shot + 2 caramel şurup + 2 vanilya" },
+        "Mocha": { "14 oz": "20 ml çikolata + Single shot", "16-20 oz": "1 pump çikolata sos + Double shot" },
+        "White Mocha": { "14 oz": "20 ml beyaz çikolata + Single shot", "16-20 oz": "1 pump beyaz çikolata sos + Double shot" },
+        "Salted Caramel Latte": { "14 oz": "20 ml salted caramel + Single shot", "16-20 oz": "1 pump salted caramel + Double shot" },
+        "Tiramisu Latte": { "14 oz": "15 ml cheesecake + Single shot + 25 ml krema shake üzerine toz kakao", "16-20 oz": "1 PUMP cheesecake + Double shot + 30 ml krema shake üzerine toz kakao" },
+        "Caramel Mocha": { "14 oz": "15 ml karamel + 15 ml çikolata + Single shot", "16-20 oz": "20 ml karamel sos + 20 ml çikolata sos + Double shot" },
+        "Antep Latte": { "14 oz": "30 g antep + 15ML karamel + 15ML beyaz çikolata + Single shot", "16-20 oz": "30–40 g antep sos + Double shot" },
+        "Aromalı Shaken Espresso": { "14 oz": "Double shot + 2.5 pump aroma buzla beraber sert 30 saniye shake bardağa dök kalanı sütle tamamla", "16-20 oz": "Double shot + single shot + 4 pump aroma buzla beraber sert 30 saniye shake bardağa dök kalanı sütle tamamla" }
+    },
+    "Sicak": {
+        "Paris Kiss": { "14 oz": "20 ml cheesecake sos + 1 pump Avrupa çileği + Single shot", "16-20 oz": "1 pump cheesecake sos + 2 pump Avrupa çileği + Double shot" },
+        "Dark Nut": { "14 oz": "20 ml çikolata sos + 1 pump fındık + Single shot", "16-20 oz": "1 pump çikolata SOS + 1 pump fındık + Double shot" },
+        "White Nut": { "14 oz": "20 ml beyaz çikolata sos + 1 pump fındık + Single shot", "16-20 oz": "1 pump beyaz çikolata sos + 1 pump fındık + Double shot" },
+        "Golden Nuts": { "14 oz": "1 pump badem + 1 pump toffee + Single shot", "16-20 oz": "2 pump badem + 2 pump toffee + Double shot" },
+        "Blush Latte": { "14 oz": "20 ml beyaz çikolata sos + 1 pump frambuaz + Single shot", "16-20 oz": "1 pump beyaz çikolata sos + 1 pump frambuaz + Double shot" },
+        "Orange Mango": { "14 oz": "20ml mango püre + 1 orange bitter şurup + single shot", "16-20 oz": "30 ml mango püre + 1 orange bitter şurup + double shot" },
+        "White Forest": { "14 oz": "20 ml white mocha sos + 1 pump raspberry + Single shot", "16-20 oz": "1 pump white mocha sos + 1 pump raspberry + Double shot" },
+        "Emerald Nut": { "14 oz": "2 pump cookie + 1 pump toffee + Single shot", "16-20 oz": "2 pump cookie + 2 pump toffee + Double shot" },
+        "Winter Mint": { "14 oz": "20 ml çikolata sos + 1 pump nane + Single shot", "16-20 oz": "1 pump çikolata sos + 1 pump nane + Double shot" },
+        "Coco Cream": { "14 oz": "1,5 pump coco + 1,5 pump vanilya + Single shot", "16-20 oz": "2 pump coco + 2 pump vanilya + Double shot" },
+        "White Brulee": { "14 oz": "30 ML White Mocha sos + 1 pump toffeenut şurup + single shot espresso", "16-20 oz": "40 ML White Mocha sos + 3 pump ToffeeNut şurup + double shot espresso" },
+        "Yaban Mersinli Latte": { "14 oz": "30 ml yaban mersini püre + single shot", "16-20 oz": "40 ml yaban mersini püre + double shot" },
+        "Strawberry Mocha": { "14 oz": "çilek şurup 1 pump + 20ml çikolata sos + single", "16-20 oz": "çilek şurup 1 pump + 1pump çikolata sos + single" },
+        "Cocomint Latte": { "Standart": "1 pump mint + 2 pump coco şurup süt karıştır bardağın içinde en son buz ve servis. Shake atılmıcak." }
+    },
+    "Soguk": {
+        "Kuzu Kulağı": { "14 oz": "Jigger büyük: 4 adet, Soda: Jigger küçük kısmıyla: 1 adet", "16-20 oz": "Jigger büyük: 6 adet, Soda: Jigger küçük kısmıyla: 1,5 adet" },
+        "Aromalı Kuzu Kulağı": { "14 oz": "30ml aroma, Jigger büyük: 4 adet, Soda: Jigger küçük: 1 adet", "16-20 oz": "30ml aroma, Jigger büyük: 6 adet, Soda: Jigger küçük: 1,5 adet" },
+        "Tahmiscici": { "14 oz": "15 adet cici bebe + 4 tur bal + süt + (isteğe bağlı espresso)", "16-20 oz": "18 adet cici bebe + 4 tur bal + süt + vanilya dondurma (isteğe bağlı espresso)" },
+        "Sweet Lime": { "14 oz": "140 ml limonata + 1 pump turunç + 1 pump menta + 1 pump raspberry + buz + yaban mersini Redbull", "16-20 oz": "140 ml limonata + 2 pump turunç + 2 pump menta + 1 pump raspberry + buz + yaban mersini Redbull" },
+        "Redberry": { "14 oz": "2 pump raspberry + 10 ml çilek püre + 120 ml limonata + karpuz Redbull", "16-20 oz": "3 pump raspberry + 15 ml çilek püre + 120 ml limonata + karpuz Redbull" },
+        "Berry Hibiscus": { "Standart": "Bardağı buzla yarısı su yarısı öz + 2pump rasberry ve shake" },
+        "Color Vibes": { "Standart": "Bardağı buzla doldur üstüne direk dök" },
+        "Summer Vibes": { "14 oz": "Jiggerin büyük kısmıyla 2 adet öz + büyük kısmıyla 3 adet limonata + total 2 pump aroma + shake", "16-20 oz": "Jiggerin büyük kısmıyla 3 adet öz + büyük kısmıyla 4 adet limonata + total 3 pump aroma + shake" },
+        "FishPut": { "14 oz": "3 top dondurma + 1 tane taze portakal 2cl mango püre + BUZ + SÜT BLEND MİLKSHAKE KIVAMINDA", "16-20 oz": "4 top dondurma + 2 tane taze portakal 4cl mango püre + BUZ + SÜT BLEND" },
+        "Blue Pina Colada": { "14 oz": "1pump blue corsao + 2pump coconut + 100ml ananas suyu + 50ml süt buz ve shake", "16-20 oz": "1pump blue corsao + 3pump coconut + 100ml ananas suyu + 60ml süt buz ve shake" },
+        "Healty Ginger": { "14 oz": "80ml limon suyu + 110ml portakal suyu + 35ml bal + 1 parça zencefil + 7-8 yaprak nane buz blend", "16-20 oz": "90ml limon suyu + 120ml portakal suyu + 40ml bal + 2 diş zencefil + 10 yaprak nane buz blend" },
+        "Red Fruits": { "14 oz": "60ml kiraz suyu + 60ml ananas suyu + 30ml limon suyu + 30ml ananas püresi + 1 pump yaban mersini şurubu shake, süz + 60ml soda", "16-20 oz": "70ml kiraz suyu + 70ml ananas suyu + 40ml limon suyu + 40ml ananas püresi + 2 pump yaban mersini şurubu shake, süz + 60ml soda" },
+        "Virgin Pinade": { "16-20 oz": "20ml ananas + 20ml elma suyu + 3 pump coco shake servis bardak ağzına tuz" },
+        "Cool Lime": { "Standart": "Buz dolu bardağa dök" }
+    },
+    "Hazirlik": {
+        "Cool Lime (Gece)": { "Standart": "5 demet nane ayıkla, 10 lime sık, 1 salatalık kes. 510gr margin + 10gr tuz ile küvete koy yarına kadar dinlensin. Sabah 5 litreye tamamla." },
+        "Limonata (Gece)": { "Standart": "1000g şeker şerbet yap soğut. 15 limon + 7 portakal tıraşla, küp doğra şerbetle harmanla. Elinle sık, tülbentle süz 9 litreye tamamla." },
+        "Color Vibes (Gece)": { "Standart": "4-5 hibiscus + 2 bergamot çayı 4 dk demle. 5 demet reyhan yaprağı + 5 limon rendesi ve küp doğranmış hali + 400g şeker şerbetiyle harmanla. Sık, tülbentle süz 5 litreye tamamla." },
+        "Summer Vibes (Gece)": { "Standart": "2 paket bergamot çayı + 7-8 tıraş limon + 8g yeşil çay + 800g sıcak su (4 dk demle)." },
+        "Berry Hibiscus (Gece)": { "Standart": "30g berry çayı + 100g şeker + 130 limon suyu + 65ml frambuaz püre + 65ml yaban mersini püre + 65ml çilek püre + 1L sıcak su (10 dk demle süz)." },
+        "Kuzu Kulağı (Gece)": { "Standart": "320g şeker + 3-4 limon kabuğu + 700ml su + 750ml limon suyu + 180g fermente kuzu kulağı." },
+        "Krema (Sabah)": { "Standart": "7 pump Vanilya şurubu sifona dök, 400 ml krema ekle çalkala. Ters şekilde basınçla, 15 dk buz makinasına göm." }
+    }
+};
+</script>
+
+<script id="main-logic-script">
+    const ADMIN_PASSWORD = "g\u00f6tdeli\u011fi";
+    const SITE_PASSWORD = "tahmisss";
+    const MENU_STORAGE_KEY = "tahmisRecipeMenuData";
+    const THEME_STORAGE_KEY = "tahmisRecipeThemeSettings";
+    const ACCESS_STORAGE_KEY = "tahmisRecipeAccess";
+    const defaultThemeSettings = {
+        bgColor: "#F9F6F0",
+        boxColor: "#FFFFFF",
+        bgImage: "https://tahmiscicoffee.com/images/logo_green.png",
+        bgOpacity: 50
+    };
+
+    function cloneData(data) {
+        return JSON.parse(JSON.stringify(data));
+    }
+
+    function readStorage(key, fallback) {
+        try {
+            const stored = localStorage.getItem(key);
+            return stored ? JSON.parse(stored) : fallback;
+        } catch (error) {
+            return fallback;
+        }
+    }
+
+    function writeStorage(key, value) {
+        try {
+            localStorage.setItem(key, JSON.stringify(value));
+        } catch (error) {}
+    }
+
+    function loadMenuData() {
+        return readStorage(MENU_STORAGE_KEY, cloneData(window.defaultMenuData));
+    }
+
+    function persistMenuData() {
+        window.defaultMenuData = cloneData(menuData);
+        writeStorage(MENU_STORAGE_KEY, menuData);
+    }
+
+    function loadThemeSettings() {
+        return Object.assign({}, defaultThemeSettings, readStorage(THEME_STORAGE_KEY, {}));
+    }
+
+    function persistThemeSettings() {
+        writeStorage(THEME_STORAGE_KEY, themeSettings);
+    }
+
+    let menuData = loadMenuData();
+    let themeSettings = loadThemeSettings();
+    let currentCategory = menuData.Demlemeler ? 'Demlemeler' : (Object.keys(menuData)[0] || "");
+    let isAdmin = false;
+
+    const categoryNames = {
+        "Demlemeler": "Demlemeler",
+        "Espresso": "Espresso Bazlılar",
+        "Matcha": "Matcha Serisi",
+        "Aromali": "Aromalı Latteler",
+        "Sicak": "İmza Sıcak",
+        "Soguk": "İmza Soğuk",
+        "Hazirlik": "Hazırlık"
+    };
+
+    function normalizeHexColor(value, fallback) {
+        return /^#[0-9a-f]{6}$/i.test(value || "") ? value : fallback;
+    }
+
+    function blendHexColor(from, to, amount) {
+        const a = normalizeHexColor(from, "#FFFFFF").slice(1);
+        const b = normalizeHexColor(to, "#FFFFFF").slice(1);
+        const mixed = [0, 2, 4].map(index => {
+            const start = parseInt(a.slice(index, index + 2), 16);
+            const end = parseInt(b.slice(index, index + 2), 16);
+            return Math.round(start + (end - start) * amount).toString(16).padStart(2, "0");
+        });
+        return `#${mixed.join("")}`;
+    }
+
+    function sanitizeOpacity(value) {
+        const numberValue = Number(value);
+        if (Number.isNaN(numberValue)) return defaultThemeSettings.bgOpacity;
+        return Math.min(100, Math.max(0, numberValue));
+    }
+
+    function cssBackgroundImage(value) {
+        const cleanUrl = String(value || "").trim().replace(/[\r\n]/g, "");
+        if (!cleanUrl) return "none";
+        return `url("${cleanUrl.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}")`;
+    }
+
+    function applyThemeSettings() {
+        themeSettings.bgColor = normalizeHexColor(themeSettings.bgColor, defaultThemeSettings.bgColor);
+        themeSettings.boxColor = normalizeHexColor(themeSettings.boxColor, defaultThemeSettings.boxColor);
+        themeSettings.bgOpacity = sanitizeOpacity(themeSettings.bgOpacity);
+
+        const root = document.documentElement;
+        root.style.setProperty("--bg-color", themeSettings.bgColor);
+        root.style.setProperty("--box-bg", themeSettings.boxColor);
+        root.style.setProperty("--box-soft-bg", blendHexColor(themeSettings.boxColor, "#f5f5f5", 0.72));
+        root.style.setProperty("--bg-watermark-image", cssBackgroundImage(themeSettings.bgImage));
+        root.style.setProperty("--bg-watermark-opacity", String(themeSettings.bgOpacity / 100));
+    }
+
+    function syncThemeControls() {
+        const bgColorInput = document.getElementById("themeBgColor");
+        const boxColorInput = document.getElementById("themeBoxColor");
+        const bgImageInput = document.getElementById("themeBgImage");
+        const opacityInput = document.getElementById("themeBgOpacity");
+        const opacityValue = document.getElementById("themeOpacityValue");
+        if (!bgColorInput || !boxColorInput || !bgImageInput || !opacityInput || !opacityValue) return;
+
+        bgColorInput.value = themeSettings.bgColor;
+        boxColorInput.value = themeSettings.boxColor;
+        bgImageInput.value = themeSettings.bgImage || "";
+        opacityInput.value = themeSettings.bgOpacity;
+        opacityValue.textContent = `${themeSettings.bgOpacity}%`;
+    }
+
+    function previewThemeSettings() {
+        const bgColorInput = document.getElementById("themeBgColor");
+        const boxColorInput = document.getElementById("themeBoxColor");
+        const bgImageInput = document.getElementById("themeBgImage");
+        const opacityInput = document.getElementById("themeBgOpacity");
+        const opacityValue = document.getElementById("themeOpacityValue");
+        if (!bgColorInput || !boxColorInput || !bgImageInput || !opacityInput) return;
+
+        themeSettings.bgColor = normalizeHexColor(bgColorInput.value, defaultThemeSettings.bgColor);
+        themeSettings.boxColor = normalizeHexColor(boxColorInput.value, defaultThemeSettings.boxColor);
+        themeSettings.bgImage = bgImageInput.value.trim();
+        themeSettings.bgOpacity = sanitizeOpacity(opacityInput.value);
+        if (opacityValue) opacityValue.textContent = `${themeSettings.bgOpacity}%`;
+        applyThemeSettings();
+    }
+
+    function saveThemeSettings() {
+        previewThemeSettings();
+        persistThemeSettings();
+        alert("Gorunum kaydedildi!");
+    }
+
+    function hasSiteAccess() {
+        return false;
+    }
+
+    function rememberSiteAccess() {
+        return;
+    }
+
+    function openSiteGate() {
+        const gate = document.getElementById("siteGate");
+        if (!gate) return;
+        gate.classList.remove("hidden");
+        document.body.classList.add("locked");
+        setTimeout(() => {
+            const passwordInput = document.getElementById("siteGatePassword");
+            if (passwordInput) passwordInput.focus();
+        }, 50);
+    }
+
+    function closeSiteGate() {
+        const gate = document.getElementById("siteGate");
+        if (gate) gate.classList.add("hidden");
+        document.body.classList.remove("locked");
+    }
+
+    async function unlockSite(event) {
+    event.preventDefault();
+    const password = document.getElementById('siteGatePassword').value;
+    const errorText = document.getElementById('siteGateError');
+
+    try {
+        const response = await fetch('/api/verify-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            document.getElementById('siteGate').classList.add('hidden');
+            document.body.classList.remove('locked');
+            // Giriş bilgisini tarayıcıda geçici tut (isteğe bağlı)
+            sessionStorage.setItem('isLoggedIn', 'true');
+        } else {
+            errorText.textContent = "Hatalı şifre!";
+        }
+    } catch (error) {
+        errorText.textContent = "Sunucu hatası! Lütfen tekrar deneyin.";
+    }
+}
+
+    function initSiteGate() {
+        if (hasSiteAccess()) {
+            closeSiteGate();
+        } else {
+            openSiteGate();
+        }
+    }
+
+    function renderTabs() {
+        const navDiv = document.getElementById('userTabs');
+        navDiv.innerHTML = '';
+        for (const key in menuData) {
+            const displayName = categoryNames[key] || key;
+            const isActive = (key === currentCategory) ? 'active' : '';
+            navDiv.innerHTML += `<button class="tab-btn ${isActive}" onclick="changeCategory('${key}')">${displayName}</button>`;
+        }
+    }
+
+    function populateCategorySelect() {
+        const select = document.getElementById('newCat');
+        select.innerHTML = '';
+        for (const key in menuData) {
+            const displayName = categoryNames[key] || key;
+            select.innerHTML += `<option value="${key}">${displayName}</option>`;
+        }
+        select.innerHTML += `<option value="ADD_NEW_CATEGORY" style="color: blue; font-weight: bold;">+ Yeni Kategori Ekle...</option>`;
+    }
+
+    function checkNewCategory(selectElement) {
+        if (selectElement.value === "ADD_NEW_CATEGORY") {
+            const newCatName = prompt("Yeni Kategori Adını Giriniz:");
+            if (newCatName && newCatName.trim() !== "") {
+                const safeKey = newCatName.trim();
+                if (!menuData[safeKey]) {
+                    categoryNames[safeKey] = safeKey;
+                    menuData[safeKey] = {};
+                    persistMenuData();
+                    populateCategorySelect();
+                    renderTabs();
+                }
+                selectElement.value = safeKey;
+            } else {
+                selectElement.selectedIndex = 0;
+            }
+        }
+    }
+
+    function renderMenu() {
+        const listDiv = document.getElementById('recipe-list');
+        listDiv.innerHTML = '';
+        const items = menuData[currentCategory] || {};
+        for (const itemName in items) {
+            const sizes = items[itemName];
+            let sizesHTML = '';
+            for (const size in sizes) {
+                sizesHTML += `
+                    <details class="size-group">
+                        <summary>${size}</summary>
+                        <div class="recipe-content">${sizes[size]}</div>
+                    </details>
+                `;
+            }
+            const itemHTML = `
+                <details class="item-group" id="item-${itemName.replace(/\s/g, '')}">
+                    <summary>${itemName}</summary>
+                    <div class="sizes-container">
+                        ${sizesHTML}
+                    </div>
+                </details>
+            `;
+            listDiv.innerHTML += itemHTML;
+        }
+    }
+
+    function handleSearch(query) {
+        const suggestionsDiv = document.getElementById('searchSuggestions');
+        if (query.length < 1) {
+            suggestionsDiv.style.display = 'none';
+            return;
+        }
+
+        suggestionsDiv.innerHTML = '';
+        let foundCount = 0;
+
+        for (const cat in menuData) {
+            for (const item in menuData[cat]) {
+                if (item.toLowerCase().includes(query.toLowerCase())) {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.innerHTML = `<span>${item}</span><span class="suggestion-category">${categoryNames[cat] || cat}</span>`;
+                    div.onclick = () => {
+                        goToProduct(cat, item);
+                        suggestionsDiv.style.display = 'none';
+                        document.getElementById('productSearch').value = '';
+                    };
+                    suggestionsDiv.appendChild(div);
+                    foundCount++;
+                }
+            }
+        }
+
+        suggestionsDiv.style.display = foundCount > 0 ? 'block' : 'none';
+    }
+
+    function goToProduct(cat, itemName) {
+        if (isAdmin) logoutAdmin();
+        currentCategory = cat;
+        renderTabs();
+        renderMenu();
+        
+        const elementId = `item-${itemName.replace(/\s/g, '')}`;
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.open = true;
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            element.style.borderLeft = "10px solid #2e7d32";
+            setTimeout(() => element.style.borderLeft = "6px solid var(--secondary)", 2000);
+        }
+    }
+
+    function changeCategory(category) {
+        currentCategory = category;
+        renderTabs();
+        if (!isAdmin) renderMenu();
+    }
+
+    function loginAdmin() {
+        const pass = prompt("Yönetici Şifresini Giriniz:");
+        if (pass === ADMIN_PASSWORD) {
+            isAdmin = true;
+            document.getElementById('recipe-list').style.display = 'none';
+            document.getElementById('userTabs').style.display = 'none';
+            document.getElementById('admin-panel').style.display = 'block';
+            document.getElementById('loginBtn').style.display = 'none';
+            document.getElementById('logoutBtn').style.display = 'block';
+            populateCategorySelect();
+            syncThemeControls();
+            renderAdminPanel();
+        } else if(pass !== null) {
+            alert("Hatalı Şifre!");
+        }
+    }
+
+    function logoutAdmin() {
+        isAdmin = false;
+        document.getElementById('recipe-list').style.display = 'block';
+        document.getElementById('userTabs').style.display = 'flex';
+        document.getElementById('admin-panel').style.display = 'none';
+        document.getElementById('loginBtn').style.display = 'block';
+        document.getElementById('logoutBtn').style.display = 'none';
+        renderMenu();
+    }
+
+    function addNewProduct() {
+        const cat = document.getElementById('newCat').value;
+        const prodName = document.getElementById('newProdName').value.trim();
+        const size = document.getElementById('newSize').value.trim();
+        const recipe = document.getElementById('newRecipe').value.trim();
+
+        if (cat === "ADD_NEW_CATEGORY") return;
+        if (!prodName || !size || !recipe) {
+            alert("Eksik alan bırakmayın!");
+            return;
+        }
+
+        if (!menuData[cat][prodName]) menuData[cat][prodName] = {};
+        menuData[cat][prodName][size] = recipe;
+        persistMenuData();
+        
+        document.getElementById('newProdName').value = '';
+        document.getElementById('newSize').value = '';
+        document.getElementById('newRecipe').value = '';
+
+        alert(`✅ Eklendi!`);
+        renderAdminPanel();
+    }
+
+    function deleteProduct(cat, itemName) {
+        if(confirm(`'${itemName}' ürününü ve tüm reçetelerini silmek istediğinize emin misiniz?`)) {
+            delete menuData[cat][itemName];
+            persistMenuData();
+            renderAdminPanel();
+        }
+    }
+
+    function deleteCategory(cat) {
+        if(confirm(`'${cat}' kategorisini ve İÇİNDEKİ TÜM ÜRÜNLERİ silmek istediğinize emin misiniz?`)) {
+            delete menuData[cat];
+            if (currentCategory === cat) {
+                currentCategory = Object.keys(menuData)[0] || "";
+            }
+            persistMenuData();
+            populateCategorySelect();
+            renderTabs();
+            renderAdminPanel();
+        }
+    }
+
+    function renderAdminPanel() {
+        const adminDiv = document.getElementById('admin-editor-list');
+        adminDiv.innerHTML = '';
+        for (const category in menuData) {
+            let catDisplayName = categoryNames[category] || category;
+            let categoryHTML = `
+                <div class="cat-header">
+                    <h3>${catDisplayName}</h3>
+                    <button class="delete-btn" onclick="deleteCategory('${category}')">Kategoriyi Sil 🗑️</button>
+                </div>`;
+            
+            for (const itemName in menuData[category]) {
+                const sizes = menuData[category][itemName];
+                let sizesHTML = '';
+                for (const size in sizes) {
+                    const uniqueId = `edit_${category.replace(/\s/g, '')}_${itemName.replace(/\s/g, '')}_${size.replace(/\s/g, '')}`;
+                    sizesHTML += `
+                        <details class="size-group">
+                            <summary>Boyut: ${size}</summary>
+                            <div class="recipe-content">
+                                <textarea id="${uniqueId}" class="edit-textarea" data-cat="${category}" data-item="${itemName}" data-size="${size}">${sizes[size]}</textarea>
+                            </div>
+                        </details>
+                    `;
+                }
+                categoryHTML += `
+                    <details class="item-group">
+                        <summary>
+                            <span>✏️ ${itemName}</span>
+                            <button class="delete-btn" onclick="deleteProduct('${category}', '${itemName}')">Ürünü Sil 🗑️</button>
+                        </summary>
+                        <div class="sizes-container">${sizesHTML}</div>
+                    </details>
+                `;
+            }
+            adminDiv.innerHTML += categoryHTML;
+        }
+    }
+
+    function saveAdminChanges() {
+        const textareas = document.querySelectorAll('.edit-textarea');
+        textareas.forEach(ta => {
+            const cat = ta.getAttribute('data-cat');
+            const item = ta.getAttribute('data-item');
+            const size = ta.getAttribute('data-size');
+            if(menuData[cat] && menuData[cat][item]) menuData[cat][item][size] = ta.value;
+        });
+        persistMenuData();
+        previewThemeSettings();
+        persistThemeSettings();
+        alert("✅ Kaydedildi!");
+    }
+
+    function downloadUpdatedFile() {
+        saveAdminChanges();
+        const updatedJsonString = JSON.stringify(window.defaultMenuData, null, 4);
+        document.getElementById('database-script').textContent = "\nwindow.defaultMenuData = " + updatedJsonString + ";\n";
+        let htmlContent = "<!DOCTYPE html>\n<html lang=\"tr\">\n" + document.documentElement.innerHTML + "\n</html>";
+        const blob = new Blob([htmlContent], { type: "text/html" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Tahmisci_Receteler.html`;
+        link.click();
+    }
+
+    window.onload = function() {
+        applyThemeSettings();
+        syncThemeControls();
+        initSiteGate();
+        renderTabs();
+        renderMenu();
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-container')) {
+                document.getElementById('searchSuggestions').style.display = 'none';
+            }
+        });
+    };
+</script>
+
+</body>
+</html>
