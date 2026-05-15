@@ -660,32 +660,22 @@ window.defaultMenuData = {
         document.body.classList.remove("locked");
     }
 
-    async function unlockSite(event) {
-    event.preventDefault();
-    const password = document.getElementById('siteGatePassword').value;
-    const errorText = document.getElementById('siteGateError');
-
-    try {
-        const response = await fetch('/api/verify-password', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ password })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            document.getElementById('siteGate').classList.add('hidden');
-            document.body.classList.remove('locked');
-            // Giriş bilgisini tarayıcıda geçici tut (isteğe bağlı)
-            sessionStorage.setItem('isLoggedIn', 'true');
-        } else {
-            errorText.textContent = "Hatalı şifre!";
+    function unlockSite(event) {
+        if (event) event.preventDefault();
+        const passwordInput = document.getElementById("siteGatePassword");
+        const errorText = document.getElementById("siteGateError");
+        if (passwordInput && passwordInput.value === SITE_PASSWORD) {
+            rememberSiteAccess();
+            if (errorText) errorText.textContent = "";
+            closeSiteGate();
+            return;
         }
-    } catch (error) {
-        errorText.textContent = "Sunucu hatası! Lütfen tekrar deneyin.";
+        if (errorText) errorText.textContent = "Hatali sifre!";
+        if (passwordInput) {
+            passwordInput.value = "";
+            passwordInput.focus();
+        }
     }
-}
 
     function initSiteGate() {
         if (hasSiteAccess()) {
